@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cronos: Cronología Bíblica e Histórica</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* --- VARIABLES Y RESET --- */
+        :root {
+            --primary-burgundy: #4a0e0e;
+            --primary-gold: #c5a059;
+            --gold-light: #e6c88b;
+            --secondary-blue: #1c2e4a;
+            --bg-parchment: #f4f1ea;
+            --bg-paper: #ffffff;
+            --text-dark: #2b2b2b;
+            --text-light: #f8f9fa;
+            --border-color: #dcd6cc;
+            --font-heading: 'Cinzel', serif;
+            --font-body: 'Merriweather', serif;
+            --shadow-card: 0 10px 30px rgba(74, 14, 14, 0.1);
+            --transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg-parchment);
+            color: var(--text-dark);
+            font-family: var(--font-body);
+            line-height: 1.6;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- LOGIN PAGE --- */
+        #login-page {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex;
+            z-index: 20000;
+            background: white;
+            transition: transform 0.8s ease-in-out;
+        }
+
+        #login-page.slide-up { transform: translateY(-100%); }
+
+        .login-left {
+            flex: 1;
+            background: linear-gradient(135deg, var(--primary-burgundy), #2c0505);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: var(--primary-gold);
+            padding: 4rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-left::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMSkiLz48L3N2Zz4=');
+            opacity: 0.3;
+        }
+
+        .login-brand h1 {
+            font-family: var(--font-heading);
+            font-size: 3.5rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 1rem;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            text-align: center;
+        }
+
+        .login-brand p {
+            font-family: var(--font-heading);
+            font-size: 1.2rem;
+            font-style: italic;
+            border-top: 1px solid var(--primary-gold);
+            padding-top: 1.5rem;
+            color: var(--gold-light);
+            text-align: center;
+        }
+
+        .login-right {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: var(--bg-parchment);
+        }
+
+        .login-box {
+            background: white;
+            padding: 3rem;
+            width: 100%;
+            max-width: 450px;
+            border-radius: 4px;
+            box-shadow: var(--shadow-card);
+            border: 1px solid var(--border-color);
+        }
+
+        .login-box h2 {
+            font-family: var(--font-heading);
+            color: var(--primary-burgundy);
+            margin-bottom: 2rem;
+            text-align: center;
+            font-size: 1.8rem;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 1rem;
+            background-color: var(--primary-burgundy);
+            color: var(--primary-gold);
+            border: none;
+            font-family: var(--font-heading);
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-top: 1rem;
+        }
+
+        .login-btn:hover {
+            background-color: #2c0505;
+            box-shadow: 0 5px 15px rgba(44, 5, 5, 0.3);
+        }
+
+        .error-msg {
+            color: #d93025;
+            font-size: 0.9rem;
+            text-align: center;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        /* --- LOADING SCREEN --- */
+        #loading-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-parchment);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            transition: opacity 1s ease-in-out, visibility 1s;
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        #loading-screen.active { opacity: 1; visibility: visible; }
+        #loading-screen.finished { opacity: 0; visibility: hidden; pointer-events: none; }
+
+        .loader-icon {
+            font-size: 3rem;
+            color: var(--primary-burgundy);
+            animation: spin 3s linear infinite;
+            margin-bottom: 1rem;
+        }
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* --- APP STRUCTURE --- */
+        #app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 1s ease, transform 1s ease;
+        }
+
+        #app-container.visible { opacity: 1; transform: translateY(0); }
+
+        header {
+            background-color: var(--primary-burgundy);
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 10;
+            border-bottom: 4px solid var(--primary-gold);
+        }
+
+        .header-inner {
+            max-width: 1600px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-area h1 {
+            font-family: var(--font-heading);
+            font-size: 1.8rem;
+            color: var(--primary-gold);
+            letter-spacing: 1px;
+        }
+        
+        .logo-area span { color: white; font-size: 0.9em; }
+
+        .header-actions { display: flex; gap: 1rem; align-items: center; }
+
+        .add-btn {
+            background: transparent;
+            border: 1px solid var(--primary-gold);
+            color: var(--primary-gold);
+            padding: 0.6rem 1.2rem;
+            font-family: var(--font-heading);
+            cursor: pointer;
+            border-radius: 4px;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .add-btn:hover {
+            background: var(--primary-gold);
+            color: var(--primary-burgundy);
+            box-shadow: 0 0 15px rgba(197, 160, 89, 0.4);
+        }
+
+        .logout-btn {
+            color: var(--gold-light);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+        .logout-btn:hover { color: white; }
+
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--primary-gold);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        /* MAIN LAYOUT */
+        .main-layout {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            max-width: 1600px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 250px;
+            background-color: #fff;
+            border-right: 1px solid var(--border-color);
+            padding: 1.5rem 0;
+            display: flex;
+            flex-direction: column;
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjZjRmMWVhIi8+CjxwYXRoIGQ9Ik0wIDBMNCA0Wk00IDBMMCA0WiIgc3Ryb2tlPSIjZWNlOGUyIiBzdHJva2Utd2lkdGg9IjEiLz4KPC9zdmc+');
+        }
+
+        .sidebar-title {
+            padding: 0 1.5rem 1rem;
+            font-family: var(--font-heading);
+            color: var(--primary-burgundy);
+            font-weight: 700;
+            border-bottom: 2px solid var(--primary-gold);
+            margin-bottom: 1rem;
+        }
+
+        .filter-btn {
+            background: none;
+            border: none;
+            text-align: left;
+            padding: 1rem 1.5rem;
+            font-family: var(--font-heading);
+            color: #555;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-left: 4px solid transparent;
+        }
+
+        .filter-btn:hover {
+            background-color: rgba(197, 160, 89, 0.1);
+            color: var(--primary-burgundy);
+        }
+
+        .filter-btn.active {
+            background-color: rgba(197, 160, 89, 0.2);
+            color: var(--primary-burgundy);
+            border-left-color: var(--primary-burgundy);
+            font-weight: 700;
+        }
+
+        /* CONTENT AREA */
+        .content-area {
+            flex: 1;
+            display: flex;
+            gap: 2rem;
+            padding: 2rem;
+            overflow: hidden;
+            background-image: radial-gradient(var(--bg-paper), var(--bg-parchment));
+        }
+
+        .panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: white;
+            border-radius: 8px;
+            box-shadow: var(--shadow-card);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+
+        .panel-header {
+            padding: 1.2rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .panel-header h2 {
+            font-family: var(--font-heading);
+            font-size: 1.4rem;
+            margin: 0;
+        }
+        
+        .panel-biblical .panel-header {
+            background-color: #fcfbf9;
+            color: var(--primary-burgundy);
+            border-top: 4px solid var(--primary-burgundy);
+        }
+
+        .panel-historical .panel-header {
+            background-color: #f8f9fa;
+            color: var(--secondary-blue);
+            border-top: 4px solid var(--secondary-blue);
+        }
+
+        /* TABLES & IMAGES */
+        .table-wrapper {
+            flex: 1;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 5;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        th {
+            text-align: left;
+            padding: 1rem;
+            font-family: var(--font-heading);
+            font-size: 0.9rem;
+            color: #666;
+            text-transform: uppercase;
+        }
+
+        td {
+            padding: 1.2rem 1rem;
+            border-bottom: 1px solid #eee;
+            font-size: 0.95rem;
+            vertical-align: middle;
+        }
+
+        .id-cell {
+            text-align: center;
+            font-weight: bold;
+            color: #999;
+            font-family: var(--font-heading);
+            width: 50px;
+        }
+
+        .desc-cell {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .event-img {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            flex-shrink: 0;
+            background-color: #f0f0f0;
+        }
+
+        .year-cell {
+            font-family: var(--font-heading);
+            font-weight: 700;
+            width: 120px;
+            white-space: nowrap;
+        }
+
+        .panel-biblical .year-cell { color: var(--primary-burgundy); }
+        .panel-historical .year-cell { color: var(--secondary-blue); }
+
+        /* PAGINATION */
+        .pagination {
+            padding: 1rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #fafafa;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .page-btn {
+            background: white;
+            border: 1px solid var(--border-color);
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 5px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: var(--transition);
+        }
+
+        .page-btn:hover:not(:disabled) { background-color: var(--primary-gold); color: white; }
+        .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        /* MODAL */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(44, 25, 25, 0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+            backdrop-filter: blur(3px);
+        }
+
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+
+        .modal {
+            background: var(--bg-paper);
+            width: 90%;
+            max-width: 550px;
+            border-radius: 2px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+            transform: translateY(30px);
+            transition: var(--transition);
+            border: 1px solid var(--primary-gold);
+            position: relative;
+        }
+
+        .modal-overlay.active .modal { transform: translateY(0); }
+
+        .modal-header {
+            background: var(--primary-burgundy);
+            color: var(--primary-gold);
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .close-btn { background: none; border: none; color: var(--primary-gold); font-size: 1.5rem; cursor: pointer; }
+
+        .modal-body { padding: 2rem; max-height: 70vh; overflow-y: auto; }
+
+        .form-group { margin-bottom: 1.2rem; }
+        .form-group label { display: block; margin-bottom: 0.4rem; font-family: var(--font-heading); font-weight: 700; color: var(--primary-burgundy); font-size: 0.85rem; }
+        .form-control { width: 100%; padding: 0.7rem; border: 1px solid var(--border-color); font-family: var(--font-body); }
+
+        .btn { padding: 0.8rem 1.5rem; border: none; cursor: pointer; font-family: var(--font-heading); font-weight: 700; transition: var(--transition); }
+        .btn-cancel { background: #e0e0e0; color: #333; }
+        .btn-save { background: var(--primary-burgundy); color: var(--primary-gold); }
+
+        @media (max-width: 900px) {
+            .content-area { flex-direction: column; overflow-y: auto; }
+            .table-wrapper { max-height: 350px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="login-page">
+        <div class="login-left">
+            <div class="login-brand">
+                <h1>CRONOS</h1>
+                <p>Cronología Bíblica e Histórica</p>
+            </div>
+        </div>
+        <div class="login-right">
+            <div class="login-box">
+                <h2>Acceso</h2>
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label>Correo Electrónico</label>
+                        <input type="email" id="email" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Contraseña</label>
+                        <input type="password" id="password" class="form-control" required>
+                    </div>
+                    <button type="submit" class="login-btn">Entrar</button>
+                    <p class="error-msg" id="loginError">Credenciales incorrectas.</p>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="loading-screen">
+        <div class="loader-icon"><i class="fas fa-hourglass-half"></i></div>
+        <h3>Sincronizando...</h3>
+    </div>
+
+    <div id="app-container">
+        <header>
+            <div class="header-inner">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+                    <div class="logo-area"><h1>CRONOS <span> Cronología Bíblica-Histórica</span></h1></div>
+                </div>
+                <div class="header-actions">
+                    <button class="add-btn" id="addEventBtn"><i class="fas fa-plus"></i> Nuevo Suceso</button>
+                    <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i></button>
+                </div>
+            </div>
+        </header>
+
+        <div class="main-layout">
+            <nav class="sidebar" id="sidebar">
+                <div class="sidebar-title">Períodos</div>
+                <button class="filter-btn active" data-period="all"><i class="fas fa-layer-group"></i> Línea Completa</button>
+                <button class="filter-btn" data-period="old"><i class="fas fa-scroll"></i> Antiguo Testamento</button>
+                <button class="filter-btn" data-period="inter"><i class="fas fa-hourglass-half"></i> Período Intermedio</button>
+                <button class="filter-btn" data-period="new"><i class="fas fa-cross"></i> Nuevo Testamento</button>
+            </nav>
+
+            <main class="content-area">
+                <section class="panel panel-biblical">
+                    <div class="panel-header"><i class="fas fa-bible"></i> <h2>Escrituras</h2></div>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead><tr><th class="col-id">#</th><th>Acontecimiento</th><th>Año</th></tr></thead>
+                            <tbody id="biblicalTableBody"></tbody>
+                        </table>
+                    </div>
+                    <div class="pagination" id="biblicalPagination"></div>
+                </section>
+
+                <section class="panel panel-historical">
+                    <div class="panel-header"><i class="fas fa-landmark"></i> <h2>Historia Secular</h2></div>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead><tr><th class="col-id">#</th><th>Año</th><th>Suceso Mundial</th></tr></thead>
+                            <tbody id="historicalTableBody"></tbody>
+                        </table>
+                    </div>
+                    <div class="pagination" id="historicalPagination"></div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Registrar Acontecimiento</h3>
+                <button class="close-btn" id="closeModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="eventForm">
+                    <div class="form-group">
+                        <label>Naturaleza del Evento</label>
+                        <div style="display:flex; gap:1.5rem">
+                            <label><input type="radio" name="eventType" value="biblical" checked> Bíblico</label>
+                            <label><input type="radio" name="eventType" value="historical"> Histórico</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Era Cronológica</label>
+                        <select id="eventPeriod" class="form-control">
+                            <option value="old">Antiguo Testamento</option>
+                            <option value="inter">Período Intermedio</option>
+                            <option value="new">Nuevo Testamento</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Datación (Año)</label>
+                        <input type="text" id="eventYear" class="form-control" placeholder="Ej: 1446 a.C.">
+                    </div>
+                    <div class="form-group">
+                        <label>Descripción</label>
+                        <textarea id="eventDescription" class="form-control" rows="2" placeholder="Detalle..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>URL de Imagen Ilustrativa (Opcional)</label>
+                        <input type="url" id="eventImageUrl" class="form-control" placeholder="https://ejemplo.com/imagen.jpg">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer" style="padding:1.5rem; display:flex; justify-content:flex-end; gap:1rem;">
+                <button class="btn btn-cancel" id="cancelBtn">Cancelar</button>
+                <button class="btn btn-save" id="saveBtn">Guardar Registro</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCHqsfPRfqMIr9nCIyW5zGYEvkxD44g5Cs",
+  authDomain: "cronologia-biblia.firebaseapp.com",
+  projectId: "cronologia-biblia",
+  storageBucket: "cronologia-biblia.firebasestorage.app",
+  messagingSenderId: "736235804664",
+  appId: "1:736235804664:web:9bd325b51b43d050a2e80d"
+        };
+
+        let app, db, auth;
+        try {
+            app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+        } catch (e) { console.error(e); }
+
+        let biblicalEvents = [];
+        let historicalEvents = [];
+        let state = { filter: 'all', biblicalPage: 1, historicalPage: 1, itemsPerPage: 6 };
+
+        // AUTH
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                await signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value);
+            } catch (err) { 
+                document.getElementById('loginError').style.display = 'block'; 
+            }
+        });
+
+        document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth).then(() => window.location.reload()));
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById('login-page').classList.add('slide-up');
+                document.getElementById('loading-screen').classList.add('active');
+                initDataListeners();
+                setTimeout(() => {
+                    document.getElementById('loading-screen').classList.add('finished');
+                    document.getElementById('app-container').classList.add('visible');
+                }, 1500);
+            }
+        });
+
+        // DATA
+        function initDataListeners() {
+            onSnapshot(query(collection(db, "biblia"), orderBy("customId", "asc")), (snap) => {
+                biblicalEvents = snap.docs.map(doc => ({...doc.data(), id: doc.id}));
+                renderTable('biblical');
+            });
+            onSnapshot(query(collection(db, "historia"), orderBy("customId", "asc")), (snap) => {
+                historicalEvents = snap.docs.map(doc => ({...doc.data(), id: doc.id}));
+                renderTable('historical');
+            });
+        }
+
+        // RENDER
+        function renderTable(type) {
+            const tbody = document.getElementById(`${type}TableBody`);
+            const allData = type === 'biblical' ? biblicalEvents : historicalEvents;
+            const filtered = state.filter === 'all' ? allData : allData.filter(e => e.period === state.filter);
+            
+            const start = (state[`${type}Page`] - 1) * state.itemsPerPage;
+            const paged = filtered.slice(start, start + state.itemsPerPage);
+
+            tbody.innerHTML = paged.length ? '' : '<tr><td colspan="3" style="text-align:center; padding:2rem">Sin registros</td></tr>';
+            
+            paged.forEach(event => {
+                const row = document.createElement('tr');
+                // Lógica de imagen
+                const imgHtml = event.imageUrl 
+                    ? `<img src="${event.imageUrl}" class="event-img" onerror="this.src='https://via.placeholder.com/60?text=Error'">` 
+                    : `<div class="event-img" style="display:flex; align-items:center; justify-content:center; background:#eee"><i class="fas fa-image" style="color:#ccc"></i></div>`;
+
+                if (type === 'biblical') {
+                    row.innerHTML = `
+                        <td class="id-cell">${event.customId}</td>
+                        <td><div class="desc-cell">${imgHtml} <span>${event.description}</span></div></td>
+                        <td class="year-cell">${event.year}</td>
+                    `;
+                } else {
+                    row.innerHTML = `
+                        <td class="id-cell">${event.customId}</td>
+                        <td class="year-cell">${event.year}</td>
+                        <td><div class="desc-cell">${imgHtml} <span>${event.description}</span></div></td>
+                    `;
+                }
+                tbody.appendChild(row);
+            });
+            renderPagination(type, filtered.length);
+        }
+
+        function renderPagination(type, total) {
+            const container = document.getElementById(`${type}Pagination`);
+            const pages = Math.ceil(total / state.itemsPerPage) || 1;
+            container.innerHTML = `
+                <button class="page-btn" ${state[`${type}Page`] === 1 ? 'disabled' : ''} id="${type}Prev"><i class="fas fa-chevron-left"></i></button>
+                <span style="font-size:0.8rem">Pág ${state[`${type}Page`]} / ${pages}</span>
+                <button class="page-btn" ${state[`${type}Page`] === pages ? 'disabled' : ''} id="${type}Next"><i class="fas fa-chevron-right"></i></button>
+            `;
+            document.getElementById(`${type}Prev`)?.addEventListener('click', () => { state[`${type}Page`]--; renderTable(type); });
+            document.getElementById(`${type}Next`)?.addEventListener('click', () => { state[`${type}Page`]++; renderTable(type); });
+        }
+
+        // UI EVENTS
+        document.getElementById('addEventBtn').addEventListener('click', () => document.getElementById('modalOverlay').classList.add('active'));
+        document.getElementById('closeModal').addEventListener('click', () => document.getElementById('modalOverlay').classList.remove('active'));
+        document.getElementById('cancelBtn').addEventListener('click', () => document.getElementById('modalOverlay').classList.remove('active'));
+
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                state.filter = btn.dataset.period;
+                state.biblicalPage = 1; state.historicalPage = 1;
+                renderTable('biblical'); renderTable('historical');
+            });
+        });
+
+        // SAVE
+        document.getElementById('saveBtn').addEventListener('click', async () => {
+            const type = document.querySelector('input[name="eventType"]:checked').value;
+            const data = {
+                customId: (type === 'biblical' ? biblicalEvents : historicalEvents).length + 1,
+                period: document.getElementById('eventPeriod').value,
+                year: document.getElementById('eventYear').value,
+                description: document.getElementById('eventDescription').value,
+                imageUrl: document.getElementById('eventImageUrl').value, // Guardar URL de imagen
+                createdAt: new Date()
+            };
+
+            if(data.year && data.description) {
+                await addDoc(collection(db, type === 'biblical' ? 'biblia' : 'historia'), data);
+                document.getElementById('modalOverlay').classList.remove('active');
+                document.getElementById('eventForm').reset();
+            } else {
+                alert("Completa los campos básicos");
+            }
+        });
+
+        document.getElementById('menuToggle').addEventListener('click', () => document.getElementById('sidebar').classList.toggle('active'));
+    </script>
+</body>
+</html>
