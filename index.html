@@ -447,22 +447,6 @@
             flex: 1;
         }
 
-        /* Styles for Table Images (No longer used in table, but kept if needed for other contexts) */
-        .event-img {
-            width: 60px;
-            height: 60px;
-            object-fit: cover;
-            border-radius: 4px;
-            border: 1px solid var(--border-color);
-            flex-shrink: 0;
-            background-color: #f0f0f0;
-            display: none; 
-        }
-
-        .event-img.has-image {
-            display: block; 
-        }
-
         .year-cell {
             font-family: var(--font-heading);
             font-weight: 700;
@@ -590,7 +574,7 @@
             overflow-y: auto;
         }
 
-        /* VIEW MODAL - SIMPLIFICADO */
+        /* VIEW MODAL */
         .view-modal .modal {
             max-width: 500px;
         }
@@ -685,80 +669,21 @@
         .form-control { width: 100%; padding: 0.7rem; border: 1px solid var(--border-color); font-family: var(--font-body); border-radius: 4px; }
 
         .btn { padding: 0.8rem 1.5rem; border: none; cursor: pointer; font-family: var(--font-heading); font-weight: 700; transition: var(--transition); border-radius: 4px; }
-        .btn-cancel { background: #e0e0e0; color: #333; }
         .btn-save { background: var(--primary-burgundy); color: var(--primary-gold); }
 
-        /* RESPONSIVE: Login Page */
+        /* RESPONSIVE */
         @media (max-width: 768px) {
-            #login-page {
-                flex-direction: column;
-            }
-
-            .login-left {
-                padding: 2rem 1rem;
-            }
-
-            .login-image {
-                max-width: 200px;
-                margin-bottom: 1.5rem;
-            }
-
-            .login-image img {
-                max-height: 150px;
-            }
-
-            .login-brand h1 {
-                font-size: 2.5rem;
-            }
-
-            .login-brand p {
-                font-size: 1rem;
-                padding-top: 1rem;
-            }
-
-            .header-actions {
-                gap: 0.5rem;
-            }
-
-            .add-btn, .export-btn {
-                padding: 0.5rem 0.8rem;
-                font-size: 0.8rem;
-            }
-
-            .actions-cell {
-                width: 120px;
-            }
-
-            .action-btn {
-                padding: 0.3rem;
-                margin: 0 1px;
-            }
+            #login-page { flex-direction: column; }
+            .login-left { padding: 2rem 1rem; }
+            .login-brand h1 { font-size: 2.5rem; }
+            .add-btn, .export-btn { padding: 0.5rem 0.8rem; font-size: 0.8rem; }
         }
 
         @media (max-width: 900px) {
-            .content-area { 
-                flex-direction: column; 
-                overflow-y: auto;
-                padding: 1rem;
-            }
-            .table-wrapper { 
-                max-height: 350px;
-            }
-            .main-layout {
-                flex-direction: column;
-            }
-            .sidebar {
-                width: 100%;
-                border-right: none;
-                border-bottom: 1px solid var(--border-color);
-                padding: 1rem 0;
-            }
-            .sidebar-title {
-                padding: 0 1rem 0.5rem;
-            }
-            .filter-btn {
-                padding: 0.8rem 1rem;
-            }
+            .content-area { flex-direction: column; overflow-y: auto; padding: 1rem; }
+            .table-wrapper { max-height: 350px; }
+            .main-layout { flex-direction: column; }
+            .sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--border-color); }
         }
     </style>
 </head>
@@ -929,8 +854,7 @@
                 <button class="close-btn" id="closeViewModal">&times;</button>
             </div>
             <div class="modal-body">
-                <div class="view-content" id="viewContent">
-                    </div>
+                <div class="view-content" id="viewContent"></div>
             </div>
         </div>
     </div>
@@ -942,9 +866,7 @@
                 <button class="close-btn" id="closeDeleteModal">&times;</button>
             </div>
             <div class="modal-body">
-                <div class="danger-icon">
-                    <i class="fas fa-exclamation-triangle"></i>
-                </div>
+                <div class="danger-icon"><i class="fas fa-exclamation-triangle"></i></div>
                 <div class="danger-text" id="deleteMessage">
                     ¿Está seguro que desea eliminar este registro? Esta acción no se puede deshacer.
                 </div>
@@ -963,12 +885,8 @@
                 <button class="close-btn" id="closeLogoutModal">&times;</button>
             </div>
             <div class="modal-body">
-                <div class="danger-icon">
-                    <i class="fas fa-sign-out-alt"></i>
-                </div>
-                <div class="danger-text">
-                    ¿Está seguro que desea cerrar la sesión?
-                </div>
+                <div class="danger-icon"><i class="fas fa-sign-out-alt"></i></div>
+                <div class="danger-text">¿Está seguro que desea cerrar la sesión?</div>
                 <div class="danger-actions">
                     <button class="btn-cancel" id="cancelLogout">Cancelar</button>
                     <button class="btn-danger" id="confirmLogout">Salir</button>
@@ -1006,12 +924,9 @@
             appId: "1:736235804664:web:9bd325b51b43d050a2e80d"
         };
 
-        let app, db, auth;
-        try {
-            app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            auth = getAuth(app);
-        } catch (e) { console.error(e); }
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
 
         let biblicalEvents = [];
         let historicalEvents = [];
@@ -1063,7 +978,6 @@
             }
         });
 
-        // DATA
         function initDataListeners() {
             onSnapshot(query(collection(db, "biblia"), orderBy("customId", "asc")), (snap) => {
                 biblicalEvents = snap.docs.map(doc => ({...doc.data(), id: doc.id}));
@@ -1075,7 +989,6 @@
             });
         }
 
-        // RENDER - TABLA REFACTORIZADA (SOLO TEXTO)
         function renderTable(type) {
             const tbody = document.getElementById(`${type}TableBody`);
             const allData = type === 'biblical' ? biblicalEvents : historicalEvents;
@@ -1088,81 +1001,29 @@
             
             paged.forEach(event => {
                 const row = document.createElement('tr');
-                
-                // NOTA: Se ha eliminado la lógica de imagen aquí para mostrar solo texto en la tabla.
-                
                 const actionsHtml = `
                     <div class="actions-cell">
-                        <button class="action-btn view-btn" data-id="${event.id}" data-collection="${type === 'biblical' ? 'biblia' : 'historia'}" title="Ver">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                        <button class="action-btn edit-btn" data-id="${event.id}" data-collection="${type === 'biblical' ? 'biblia' : 'historia'}" title="Editar">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="action-btn delete-btn" data-id="${event.id}" data-collection="${type === 'biblical' ? 'biblia' : 'historia'}" title="Eliminar">
-                            <i class="fas fa-trash"></i>
-                        </button>
+                        <button class="action-btn view-btn" data-id="${event.id}" data-collection="${type === 'biblical' ? 'biblia' : 'historia'}"><i class="fas fa-eye"></i></button>
+                        <button class="action-btn edit-btn" data-id="${event.id}" data-collection="${type === 'biblical' ? 'biblia' : 'historia'}"><i class="fas fa-edit"></i></button>
+                        <button class="action-btn delete-btn" data-id="${event.id}" data-collection="${type === 'biblical' ? 'biblia' : 'historia'}"><i class="fas fa-trash"></i></button>
                     </div>
                 `;
 
                 if (type === 'biblical') {
-                    row.innerHTML = `
-                        <td class="id-cell">${event.customId}</td>
-                        <td>
-                            <div class="desc-cell">
-                                <div class="desc-cell-text">${event.description}</div>
-                            </div>
-                        </td>
-                        <td class="year-cell">${event.year}</td>
-                        <td>${actionsHtml}</td>
-                    `;
+                    row.innerHTML = `<td class="id-cell">${event.customId}</td><td>${event.description}</td><td class="year-cell">${event.year}</td><td>${actionsHtml}</td>`;
                 } else {
-                    row.innerHTML = `
-                        <td class="id-cell">${event.customId}</td>
-                        <td class="year-cell">${event.year}</td>
-                        <td>
-                            <div class="desc-cell">
-                                <div class="desc-cell-text">${event.description}</div>
-                            </div>
-                        </td>
-                        <td>${actionsHtml}</td>
-                    `;
+                    row.innerHTML = `<td class="id-cell">${event.customId}</td><td class="year-cell">${event.year}</td><td>${event.description}</td><td>${actionsHtml}</td>`;
                 }
                 tbody.appendChild(row);
             });
-            
-            // Agregar event listeners a los botones de acción
             addActionListeners();
             renderPagination(type, filtered.length);
         }
 
         function addActionListeners() {
-            // Botones Ver
-            document.querySelectorAll('.view-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const id = e.currentTarget.dataset.id;
-                    const collection = e.currentTarget.dataset.collection;
-                    viewEvent(id, collection);
-                });
-            });
-            
-            // Botones Editar
-            document.querySelectorAll('.edit-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const id = e.currentTarget.dataset.id;
-                    const collection = e.currentTarget.dataset.collection;
-                    editEvent(id, collection);
-                });
-            });
-            
-            // Botones Eliminar
-            document.querySelectorAll('.delete-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const id = e.currentTarget.dataset.id;
-                    const collection = e.currentTarget.dataset.collection;
-                    showDeleteModal(id, collection);
-                });
-            });
+            document.querySelectorAll('.view-btn').forEach(btn => btn.onclick = (e) => viewEvent(e.currentTarget.dataset.id, e.currentTarget.dataset.collection));
+            document.querySelectorAll('.edit-btn').forEach(btn => btn.onclick = (e) => editEvent(e.currentTarget.dataset.id, e.currentTarget.dataset.collection));
+            document.querySelectorAll('.delete-btn').forEach(btn => btn.onclick = (e) => showDeleteModal(e.currentTarget.dataset.id, e.currentTarget.dataset.collection));
         }
 
         function renderPagination(type, total) {
@@ -1170,155 +1031,51 @@
             const pages = Math.ceil(total / state.itemsPerPage) || 1;
             container.innerHTML = `
                 <button class="page-btn" ${state[`${type}Page`] === 1 ? 'disabled' : ''} id="${type}Prev"><i class="fas fa-chevron-left"></i></button>
-                <span style="font-size:0.8rem">Pág ${state[`${type}Page`]} / ${pages}</span>
+                <span>Pág ${state[`${type}Page`]} / ${pages}</span>
                 <button class="page-btn" ${state[`${type}Page`] === pages ? 'disabled' : ''} id="${type}Next"><i class="fas fa-chevron-right"></i></button>
             `;
-            document.getElementById(`${type}Prev`)?.addEventListener('click', () => { 
-                state[`${type}Page`]--; 
-                renderTable(type); 
-            });
-            document.getElementById(`${type}Next`)?.addEventListener('click', () => { 
-                state[`${type}Page`]++; 
-                renderTable(type); 
-            });
+            document.getElementById(`${type}Prev`)?.addEventListener('click', () => { state[`${type}Page`]--; renderTable(type); });
+            document.getElementById(`${type}Next`)?.addEventListener('click', () => { state[`${type}Page`]++; renderTable(type); });
         }
 
-        // VIEW EVENT - REFACTORIZADO (SOLO DESCRIPCION E IMAGEN)
-        async function viewEvent(id, collection) {
-            const events = collection === 'biblia' ? biblicalEvents : historicalEvents;
+        async function viewEvent(id, colName) {
+            const events = colName === 'biblia' ? biblicalEvents : historicalEvents;
             const event = events.find(e => e.id === id);
-            
             if (!event) return;
-            
-            let imageHtml = '';
-            // Si hay URL, preparamos el HTML de la imagen
-            if (event.imageUrl && event.imageUrl.trim() !== '') {
-                imageHtml = `
-                    <div class="view-image">
-                        <img src="${event.imageUrl}" onerror="this.style.display='none'">
-                    </div>
-                `;
-            }
-            
-            // ÚNICAMENTE Descripción e Imagen. Nada más.
-            const content = `
-                <div class="event-detail">
-                    ${event.description}
-                </div>
-                ${imageHtml}
-            `;
-            
-            document.getElementById('viewContent').innerHTML = content;
+            const imgHtml = event.imageUrl ? `<div class="view-image"><img src="${event.imageUrl}" onerror="this.style.display='none'"></div>` : '';
+            document.getElementById('viewContent').innerHTML = `<div class="event-detail">${event.description}</div>${imgHtml}`;
             document.getElementById('viewModalOverlay').classList.add('active');
         }
 
-        // EDIT EVENT
-        async function editEvent(id, collection) {
-            const events = collection === 'biblia' ? biblicalEvents : historicalEvents;
+        async function editEvent(id, colName) {
+            const events = colName === 'biblia' ? biblicalEvents : historicalEvents;
             const event = events.find(e => e.id === id);
-            
             if (!event) return;
-            
-            // Llenar el formulario
             document.getElementById('modalTitle').textContent = 'Editar Acontecimiento';
-            document.querySelector(`input[name="eventType"][value="${collection === 'biblia' ? 'biblical' : 'historical'}"]`).checked = true;
+            document.querySelector(`input[name="eventType"][value="${colName === 'biblia' ? 'biblical' : 'historical'}"]`).checked = true;
             document.getElementById('eventPeriod').value = event.period;
             document.getElementById('eventYear').value = event.year;
             document.getElementById('eventDescription').value = event.description;
             document.getElementById('eventImageUrl').value = event.imageUrl || '';
             document.getElementById('eventId').value = event.id;
-            document.getElementById('eventCollection').value = collection;
-            
-            // Mostrar modal
+            document.getElementById('eventCollection').value = colName;
             document.getElementById('modalOverlay').classList.add('active');
-            state.currentEditId = id;
         }
 
-        // DELETE EVENT
-        function showDeleteModal(id, collection) {
+        function showDeleteModal(id, colName) {
             state.currentDeleteId = id;
-            state.currentDeleteCollection = collection;
-            
-            const events = collection === 'biblia' ? biblicalEvents : historicalEvents;
-            const event = events.find(e => e.id === id);
-            
-            if (event) {
-                document.getElementById('deleteMessage').innerHTML = `
-                    ¿Está seguro que desea eliminar el registro <strong>"${event.description}"</strong>?<br>
-                    Esta acción no se puede deshacer.
-                `;
-            }
-            
+            state.currentDeleteCollection = colName;
             document.getElementById('deleteModalOverlay').classList.add('active');
         }
 
-        async function deleteEvent() {
-            if (!state.currentDeleteId || !state.currentDeleteCollection) return;
-            
-            try {
-                await deleteDoc(doc(db, state.currentDeleteCollection, state.currentDeleteId));
-                document.getElementById('deleteModalOverlay').classList.remove('active');
-                state.currentDeleteId = null;
-                state.currentDeleteCollection = null;
-            } catch (error) {
-                console.error('Error eliminando documento: ', error);
-                alert('Error al eliminar el registro');
-            }
-        }
-
-        // UI EVENTS
-        document.getElementById('addEventBtn').addEventListener('click', () => {
-            document.getElementById('modalTitle').textContent = 'Registrar Acontecimiento';
-            document.getElementById('eventForm').reset();
-            document.getElementById('eventId').value = '';
-            document.getElementById('eventCollection').value = '';
-            document.getElementById('modalOverlay').classList.add('active');
-        });
-        
-        document.getElementById('closeModal').addEventListener('click', () => {
-            document.getElementById('modalOverlay').classList.remove('active');
-            document.getElementById('eventForm').reset();
-        });
-        
-        document.getElementById('cancelBtn').addEventListener('click', () => {
-            document.getElementById('modalOverlay').classList.remove('active');
-            document.getElementById('eventForm').reset();
-        });
-        
-        document.getElementById('closeViewModal').addEventListener('click', () => {
-            document.getElementById('viewModalOverlay').classList.remove('active');
-        });
-        
-        document.getElementById('closeDeleteModal').addEventListener('click', () => {
+        document.getElementById('confirmDelete').onclick = async () => {
+            await deleteDoc(doc(db, state.currentDeleteCollection, state.currentDeleteId));
             document.getElementById('deleteModalOverlay').classList.remove('active');
-            state.currentDeleteId = null;
-            state.currentDeleteCollection = null;
-        });
-        
-        document.getElementById('cancelDelete').addEventListener('click', () => {
-            document.getElementById('deleteModalOverlay').classList.remove('active');
-            state.currentDeleteId = null;
-            state.currentDeleteCollection = null;
-        });
-        
-        document.getElementById('confirmDelete').addEventListener('click', deleteEvent);
+        };
 
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                state.filter = btn.dataset.period;
-                state.biblicalPage = 1; 
-                state.historicalPage = 1;
-                renderTable('biblical'); 
-                renderTable('historical');
-            });
-        });
-
-        // SAVE/UPDATE EVENT
         document.getElementById('saveBtn').addEventListener('click', async () => {
-            const type = document.querySelector('input[name="eventType"]:checked').value;
-            const collection = type === 'biblical' ? 'biblia' : 'historia';
+            const typeValue = document.querySelector('input[name="eventType"]:checked').value;
+            const colName = typeValue === 'biblical' ? 'biblia' : 'historia';
             const eventId = document.getElementById('eventId').value;
             
             const data = {
@@ -1329,258 +1086,81 @@
                 updatedAt: new Date()
             };
 
-            if (!data.year || !data.description) {
-                alert("Completa los campos básicos");
-                return;
-            }
+            if (!data.year || !data.description) return alert("Completa los campos básicos");
 
             try {
                 if (eventId) {
-                    // Actualizar documento existente
-                    await updateDoc(doc(db, collection, eventId), data);
+                    const originalCol = document.getElementById('eventCollection').value;
+                    if (originalCol !== colName) {
+                        await deleteDoc(doc(db, originalCol, eventId));
+                        data.customId = (colName === 'biblia' ? biblicalEvents : historicalEvents).length + 1;
+                        data.createdAt = new Date();
+                        await addDoc(collection(db, colName), data);
+                    } else {
+                        await updateDoc(doc(db, colName, eventId), data);
+                    }
                 } else {
-                    // Crear nuevo documento
-                    data.customId = (type === 'biblical' ? biblicalEvents : historicalEvents).length + 1;
+                    data.customId = (colName === 'biblia' ? biblicalEvents : historicalEvents).length + 1;
                     data.createdAt = new Date();
-                    await addDoc(collection(db, collection), data);
+                    await addDoc(collection(db, colName), data);
                 }
-                
                 document.getElementById('modalOverlay').classList.remove('active');
                 document.getElementById('eventForm').reset();
-                document.getElementById('eventId').value = '';
-                document.getElementById('eventCollection').value = '';
             } catch (error) {
-                console.error('Error guardando documento: ', error);
-                alert('Error al guardar el registro');
+                console.error(error);
+                alert('Error al guardar');
             }
         });
 
-        // EXPORT FUNCTIONS
-        document.getElementById('exportAllBtn').addEventListener('click', () => {
-            exportToPDF('all', 'Cronología Completa - Cronos');
+        document.getElementById('addEventBtn').onclick = () => {
+            document.getElementById('modalTitle').textContent = 'Registrar Acontecimiento';
+            document.getElementById('eventForm').reset();
+            document.getElementById('eventId').value = '';
+            document.getElementById('modalOverlay').classList.add('active');
+        };
+
+        document.getElementById('closeModal').onclick = () => document.getElementById('modalOverlay').classList.remove('active');
+        document.getElementById('cancelBtn').onclick = () => document.getElementById('modalOverlay').classList.remove('active');
+        document.getElementById('closeViewModal').onclick = () => document.getElementById('viewModalOverlay').classList.remove('active');
+        document.getElementById('closeDeleteModal').onclick = () => document.getElementById('deleteModalOverlay').classList.remove('active');
+        document.getElementById('cancelDelete').onclick = () => document.getElementById('deleteModalOverlay').classList.remove('active');
+
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.onclick = () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                state.filter = btn.dataset.period;
+                state.biblicalPage = 1; state.historicalPage = 1;
+                renderTable('biblical'); renderTable('historical');
+            };
         });
-        
+
+        // EXPORT PDF
+        document.getElementById('exportAllBtn').onclick = () => exportToPDF('all', 'Cronología Completa');
         document.querySelectorAll('.export-panel-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
+            btn.onclick = (e) => {
                 const type = e.currentTarget.dataset.type;
-                const title = type === 'biblical' ? 'Escrituras Bíblicas - Cronos' : 'Historia Secular - Cronos';
-                exportToPDF(type, title);
-            });
+                exportToPDF(type, type === 'biblical' ? 'Escrituras' : 'Historia Secular');
+            };
         });
 
         async function exportToPDF(type, title) {
-            // Mostrar carga
             document.getElementById('loading-screen').classList.add('active');
-            
-            try {
-                const { jsPDF } = window.jspdf;
-                const doc = new jsPDF('p', 'mm', 'a4');
-                const pageWidth = doc.internal.pageSize.width;
-                const margin = 15;
-                const contentWidth = pageWidth - (margin * 2);
-                
-                // Título
-                doc.setFontSize(18);
-                doc.setFont('helvetica', 'bold');
-                doc.text(title, margin, margin + 10);
-                
-                // Fecha de exportación
-                doc.setFontSize(10);
-                doc.setFont('helvetica', 'normal');
-                doc.text(`Exportado: ${new Date().toLocaleDateString('es-ES')}`, margin, margin + 20);
-                
-                let yPos = margin + 30;
-                
-                // Función para agregar imagen si existe
-                const addImageToPDF = async (imageUrl, x, y, width, height) => {
-                    try {
-                        const img = new Image();
-                        img.crossOrigin = 'anonymous';
-                        img.src = imageUrl;
-                        
-                        await new Promise((resolve, reject) => {
-                            img.onload = () => resolve();
-                            img.onerror = reject;
-                        });
-                        
-                        doc.addImage(img, 'JPEG', x, y, width, height);
-                        return height + 5;
-                    } catch (error) {
-                        console.log('Error cargando imagen:', error);
-                        return 0;
-                    }
-                };
-                
-                // Exportar según el tipo
-                if (type === 'biblical' || type === 'all') {
-                    if (type === 'all') {
-                        doc.setFontSize(14);
-                        doc.setFont('helvetica', 'bold');
-                        doc.text('ESCITURAS BÍBLICAS', margin, yPos);
-                        yPos += 10;
-                    }
-                    
-                    // Encabezados de tabla bíblica
-                    doc.setFillColor(74, 14, 14);
-                    doc.setTextColor(255, 255, 255);
-                    doc.rect(margin, yPos, contentWidth, 10, 'F');
-                    doc.setFontSize(11);
-                    doc.text('ID', margin + 5, yPos + 7);
-                    doc.text('Acontecimiento', margin + 25, yPos + 7);
-                    doc.text('Año', margin + contentWidth - 30, yPos + 7);
-                    
-                    yPos += 10;
-                    
-                    // Filas bíblicas
-                    const biblicalData = state.filter === 'all' ? biblicalEvents : 
-                                        biblicalEvents.filter(e => e.period === state.filter);
-                    
-                    doc.setTextColor(0, 0, 0);
-                    doc.setFontSize(10);
-                    doc.setFont('helvetica', 'normal');
-                    
-                    for (const event of biblicalData) {
-                        // Verificar si necesitamos nueva página
-                        if (yPos > 250) {
-                            doc.addPage();
-                            yPos = margin;
-                        }
-                        
-                        // ID
-                        doc.text(event.customId.toString(), margin + 5, yPos + 7);
-                        
-                        // Descripción
-                        const descLines = doc.splitTextToSize(event.description, contentWidth - 80);
-                        doc.text(descLines, margin + 25, yPos + 7);
-                        
-                        // Año
-                        doc.text(event.year, margin + contentWidth - 30, yPos + 7, { align: 'right' });
-                        
-                        yPos += Math.max(10, descLines.length * 7);
-                        
-                        // Imagen si existe
-                        if (event.imageUrl && event.imageUrl.trim() !== '') {
-                            const imgHeight = 30;
-                            const imgWidth = 40;
-                            
-                            if (yPos + imgHeight > 280) {
-                                doc.addPage();
-                                yPos = margin;
-                            }
-                            
-                            await addImageToPDF(event.imageUrl, margin + 25, yPos, imgWidth, imgHeight);
-                            yPos += imgHeight + 5;
-                        }
-                        
-                        // Línea separadora
-                        doc.setDrawColor(200, 200, 200);
-                        doc.line(margin, yPos, margin + contentWidth, yPos);
-                        yPos += 5;
-                    }
-                    
-                    yPos += 10;
-                }
-                
-                if (type === 'historical' || type === 'all') {
-                    if (type === 'all') {
-                        if (yPos > 200) {
-                            doc.addPage();
-                            yPos = margin;
-                        }
-                        
-                        doc.setFontSize(14);
-                        doc.setFont('helvetica', 'bold');
-                        doc.text('HISTORIA SECULAR', margin, yPos);
-                        yPos += 10;
-                    }
-                    
-                    // Encabezados de tabla histórica
-                    doc.setFillColor(28, 46, 74);
-                    doc.setTextColor(255, 255, 255);
-                    doc.rect(margin, yPos, contentWidth, 10, 'F');
-                    doc.setFontSize(11);
-                    doc.text('ID', margin + 5, yPos + 7);
-                    doc.text('Año', margin + 25, yPos + 7);
-                    doc.text('Suceso Mundial', margin + 70, yPos + 7);
-                    
-                    yPos += 10;
-                    
-                    // Filas históricas
-                    const historicalData = state.filter === 'all' ? historicalEvents : 
-                                           historicalEvents.filter(e => e.period === state.filter);
-                    
-                    doc.setTextColor(0, 0, 0);
-                    doc.setFontSize(10);
-                    doc.setFont('helvetica', 'normal');
-                    
-                    for (const event of historicalData) {
-                        // Verificar si necesitamos nueva página
-                        if (yPos > 250) {
-                            doc.addPage();
-                            yPos = margin;
-                        }
-                        
-                        // ID
-                        doc.text(event.customId.toString(), margin + 5, yPos + 7);
-                        
-                        // Año
-                        doc.text(event.year, margin + 25, yPos + 7);
-                        
-                        // Descripción
-                        const descLines = doc.splitTextToSize(event.description, contentWidth - 80);
-                        doc.text(descLines, margin + 70, yPos + 7);
-                        
-                        yPos += Math.max(10, descLines.length * 7);
-                        
-                        // Imagen si existe
-                        if (event.imageUrl && event.imageUrl.trim() !== '') {
-                            const imgHeight = 30;
-                            const imgWidth = 40;
-                            
-                            if (yPos + imgHeight > 280) {
-                                doc.addPage();
-                                yPos = margin;
-                            }
-                            
-                            await addImageToPDF(event.imageUrl, margin + 70, yPos, imgWidth, imgHeight);
-                            yPos += imgHeight + 5;
-                        }
-                        
-                        // Línea separadora
-                        doc.setDrawColor(200, 200, 200);
-                        doc.line(margin, yPos, margin + contentWidth, yPos);
-                        yPos += 5;
-                    }
-                }
-                
-                // Pie de página
-                const totalPages = doc.internal.getNumberOfPages();
-                for (let i = 1; i <= totalPages; i++) {
-                    doc.setPage(i);
-                    doc.setFontSize(8);
-                    doc.setTextColor(128, 128, 128);
-                    doc.text(
-                        `Página ${i} de ${totalPages} - Cronos: Cronología Bíblica e Histórica`,
-                        pageWidth / 2,
-                        doc.internal.pageSize.height - 10,
-                        { align: 'center' }
-                    );
-                }
-                
-                // Descargar PDF
-                doc.save(`${title.replace(/ /g, '_')}_${new Date().toISOString().slice(0,10)}.pdf`);
-                
-            } catch (error) {
-                console.error('Error generando PDF:', error);
-                alert('Error al exportar a PDF');
-            } finally {
-                document.getElementById('loading-screen').classList.remove('active');
-            }
+            const { jsPDF } = window.jspdf;
+            const docPdf = new jsPDF();
+            docPdf.text(title, 10, 10);
+            let y = 20;
+            const items = type === 'all' ? [...biblicalEvents, ...historicalEvents] : (type === 'biblical' ? biblicalEvents : historicalEvents);
+            items.forEach(ev => {
+                docPdf.text(`${ev.year}: ${ev.description.substring(0, 50)}...`, 10, y);
+                y += 10;
+                if (y > 280) { docPdf.addPage(); y = 20; }
+            });
+            docPdf.save(`${title}.pdf`);
+            document.getElementById('loading-screen').classList.remove('active');
         }
 
-        document.getElementById('menuToggle').addEventListener('click', () => {
-            document.getElementById('sidebar').classList.toggle('active');
-        });
+        document.getElementById('menuToggle').onclick = () => document.getElementById('sidebar').classList.toggle('active');
     </script>
 </body>
 </html>
